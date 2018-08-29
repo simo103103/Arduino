@@ -1,6 +1,5 @@
 /*
 This sketch centers your maze servos on the maze BT control project
-
  * pitch servo pin 6 group
  * roll servo pin 7 group
  
