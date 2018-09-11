@@ -1,7 +1,7 @@
 #include "FastLED.h"
 
 // How many leds in your strip?
-#define NUM_LEDS 12 
+#define NUM_LEDS 7 
 #define DATA_PIN 7
 
 // Define the array of leds
@@ -90,9 +90,9 @@ void setup() {
   pinMode(button1, INPUT);      
   pinMode(button2, INPUT);       
   pinMode(button3, INPUT);       
-  //FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  FastLED.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
-  FastLED.setBrightness(255);
+  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  //FastLED.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
+  //FastLED.setBrightness(255);
   Serial.begin(57600);
 }
 
@@ -105,8 +105,8 @@ void loop() {
     leds[3] = CRGB(255,255,255);
     leds[4] = CRGB(255,110,0);
     leds[5] = CRGB(255,0,0);
+    Serial.println("Button 1 ");
    FastLED.show();
-    delay(500);
   } 
   // Select LED if button debounced
   if (butndown(digitalRead(button2), &bcount2, &bstate2, 10UL )) {
@@ -116,9 +116,8 @@ void loop() {
     leds[3] = CRGB(255,110,0);
     leds[4] = CRGB(255,110,0);
     leds[5] = CRGB(255,0,0);
-    Serial.println("Button 1 ");
+    Serial.println("Button 2 ");
    FastLED.show();
-    delay(500);
   } 
   // Select LED if button debounced
   if (butndown(digitalRead(button3), &bcount3, &bstate3, 10UL )) {
@@ -128,8 +127,7 @@ void loop() {
     leds[3] = CRGB(255,110,0);
     leds[4] = CRGB(255,110,0);
     leds[5] = CRGB(255,0,0);
-    Serial.println("Button 2 ");
+    Serial.println("Button 3 ");
    FastLED.show();
-    delay(500);
   }
 }
