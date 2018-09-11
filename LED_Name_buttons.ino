@@ -1,18 +1,27 @@
 #include "FastLED.h"
+
 FASTLED_USING_NAMESPACE
+
 #if defined(FASTLED_VERSION) && (FASTLED_VERSION < 3001000)
 #warning "Requires FastLED 3.1 or later; check github for latest code."
 #endif
-// How many leds in your strip?
-#define NUM_LEDS 7 
-#define DATA_PIN 7
+
+#define DATA_PIN    7
+#define LED_TYPE    WS2811
 #define COLOR_ORDER GRB
-#define BRIGHTNESS          255
-#define FRAMES_PER_SECOND  120
-// Define the array of leds
+#define NUM_LEDS    7
 CRGB leds[NUM_LEDS];
 
+unsigned long previousMillis = 0;        // will store last time LED was updated
+long OnTime = 250;           // milliseconds of on-time
+long OffTime = 75000;          // milliseconds of off-time
+
 // Radio Buttons!
+int ButtonVal = 0;
+float BRIGHTNESS = 255;
+#define FRAMES_PER_SECOND  120
+
+bool gReverseDirection = false;
 const int button1 =  2;
 const int button2 =  4;
 const int button3 =  6;
@@ -91,17 +100,17 @@ boolean butndown(char button, unsigned long *marker, char *butnstate, unsigned l
   }
 }
 
-void setup() {    
-  delay(2000); // 2 second delay for recovery 
-  pinMode(button1, INPUT);      
-  pinMode(button2, INPUT);       
-  pinMode(button3, INPUT);       
-  FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
-  //FastLED.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
+void setup() 
+{
+   delay(3000); // 3 second delay for recovery
+  // set the digital pin as output:
+  pinMode(button1, INPUT);
+  pinMode(button2, INPUT);
+  pinMode(button3, INPUT);
+  FastLED.addLeds<LED_TYPE,DATA_PIN,COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
   FastLED.setBrightness(BRIGHTNESS);
-  Serial.begin(57600);
+  Serial.begin(9600);    
 }
-
 
 // List of patterns to cycle through.  Each is defined as a separate function below.
 typedef void (*SimplePatternList[])();
@@ -111,32 +120,53 @@ uint8_t gCurrentPatternNumber = 0; // Index number of which pattern is current
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 
-void loop() {
-  // Select LED if button debounced
+void loop()
+{ 
+  // check to see if it's time to change the state of the LED
+  unsigned long currentMillis = millis();
+
   if (butndown(digitalRead(button1), &bcount1, &bstate1, 10UL )) {
-    leds[0] = CRGB(0,255,0);
-    leds[1] = CRGB(0,250,0);
-    leds[2] = CRGB(255,255,255);
-    leds[3] = CRGB(255,255,255);
-    leds[4] = CRGB(255,110,0);
-    leds[5] = CRGB(255,0,0);
-    Serial.println("Button 1 ");
-   FastLED.show();
-  } 
-  // Select LED if button debounced
+     ButtonVal=1;
+  }
   if (butndown(digitalRead(button2), &bcount2, &bstate2, 10UL )) {
-    
-  // Call the current pattern function once, updating the 'leds' array
-  gPatterns[gCurrentPatternNumber]();
+     ButtonVal=2;
+  }
 
-  // send the 'leds' array out to the actual LED strip
-  FastLED.show();  
-  // insert a delay to keep the framerate modest
-  FastLED.delay(1000/FRAMES_PER_SECOND); 
-
-  // do some periodic updates
-  EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
-  EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+   if ((ButtonVal == 1) && (currentMillis - previousMillis >= OnTime))
+        {
+          leds[0] = CRGB(255,255,255);
+          leds[1] = CRGB(255,255,255);
+          leds[2] = CRGB(255,255,255);
+          leds[3] = CRGB(255,255,255);
+          leds[4] = CRGB(255,255,255);
+          leds[5] = CRGB(255,255,255);
+          leds[6] = CRGB(255,255,255);
+          if (BRIGHTNESS >=20) {
+            BRIGHTNESS=BRIGHTNESS-0.1;
+          }
+          FastLED.setBrightness(BRIGHTNESS);
+          Serial.println(BRIGHTNESS);
+         FastLED.show();
+          previousMillis = currentMillis;  // Remember the time
+          
+        } else if (ButtonVal == 3){
+          // Call the current pattern function once, updating the 'leds' array
+            gPatterns[gCurrentPatternNumber]();
+          
+            // send the 'leds' array out to the actual LED strip
+            FastLED.show();  
+            // insert a delay to keep the framerate modest
+            FastLED.delay(1000/FRAMES_PER_SECOND); 
+          
+            // do some periodic updates
+            EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
+            EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
+          BRIGHTNESS=255;
+        } else if (ButtonVal == 2){
+            Fire2012(); // run simulation frame
+            FastLED.show(); // display this frame
+            FastLED.delay(1000 / FRAMES_PER_SECOND);
+        }     
 }
 
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
@@ -202,16 +232,41 @@ void juggle() {
     leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
     dothue += 32;
   }
-  } 
-  // Select LED if button debounced
-  if (butndown(digitalRead(button3), &bcount3, &bstate3, 10UL )) {
-    leds[0] = CRGB(0,255,0);
-    leds[1] = CRGB(0,250,0);
-    leds[2] = CRGB(255,255,0);
-    leds[3] = CRGB(255,110,0);
-    leds[4] = CRGB(255,110,0);
-    leds[5] = CRGB(255,0,0);
-    Serial.println("Button 3 ");
-   FastLED.show();
-  }
+}
+
+#define SPARKING 120
+#define COOLING  55
+
+void Fire2012()
+{
+// Array of temperature readings at each simulation cell
+  static byte heat[NUM_LEDS];
+
+  // Step 1.  Cool down every cell a little
+    for( int i = 0; i < NUM_LEDS; i++) {
+      heat[i] = qsub8( heat[i],  random8(0, ((COOLING * 10) / NUM_LEDS) + 2));
+    }
+  
+    // Step 2.  Heat from each cell drifts 'up' and diffuses a little
+    for( int k= NUM_LEDS - 1; k >= 2; k--) {
+      heat[k] = (heat[k - 1] + heat[k - 2] + heat[k - 2] ) / 3;
+    }
+    
+    // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
+    if( random8() < SPARKING ) {
+      int y = random8(7);
+      heat[y] = qadd8( heat[y], random8(160,255) );
+    }
+
+    // Step 4.  Map from heat cells to LED colors
+    for( int j = 0; j < NUM_LEDS; j++) {
+      CRGB color = HeatColor( heat[j]);
+      int pixelnumber;
+      if( gReverseDirection ) {
+        pixelnumber = (NUM_LEDS-1) - j;
+      } else {
+        pixelnumber = j;
+      }
+      leds[pixelnumber] = color;
+    }
 }
