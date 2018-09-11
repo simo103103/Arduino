@@ -1,10 +1,16 @@
+#include "FastLED.h"
+
+// How many leds in your strip?
+#define NUM_LEDS 12 
+#define DATA_PIN 7
+
+// Define the array of leds
+CRGB leds[NUM_LEDS];
+
 // Radio Buttons!
-const int led1Pin =  3;    // LED pin number
 const int button1 =  2;
-const int led2Pin =  5; 
 const int button2 =  4;
-const int led3Pin =  6;
-const int button3 =  7;
+const int button3 =  6;
 char bstate1 = 0;
 char bstate2 = 0;
 char bstate3 = 0;
@@ -80,38 +86,50 @@ boolean butndown(char button, unsigned long *marker, char *butnstate, unsigned l
   }
 }
 
-void setup() {
-  pinMode(led1Pin, OUTPUT);      
-  pinMode(button1, INPUT); 
-  pinMode(led2Pin, OUTPUT);      
-  pinMode(button2, INPUT);      
-  pinMode(led3Pin, OUTPUT);      
+void setup() {     
+  pinMode(button1, INPUT);      
+  pinMode(button2, INPUT);       
   pinMode(button3, INPUT);       
-  digitalWrite (led1Pin, LOW);
-  digitalWrite (led2Pin, LOW);
-  digitalWrite (led3Pin, LOW);
+  //FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812,DATA_PIN,RGB>(leds,NUM_LEDS);
+  FastLED.setBrightness(255);
+  Serial.begin(57600);
 }
 
 void loop() {
   // Select LED if button debounced
   if (butndown(digitalRead(button1), &bcount1, &bstate1, 10UL )) {
-    digitalWrite (led1Pin, HIGH);
-    digitalWrite (led2Pin, LOW);
-    digitalWrite (led3Pin, LOW);
+    leds[0] = CRGB(0,255,0);
+    leds[1] = CRGB(0,250,0);
+    leds[2] = CRGB(255,255,255);
+    leds[3] = CRGB(255,255,255);
+    leds[4] = CRGB(255,110,0);
+    leds[5] = CRGB(255,0,0);
+   FastLED.show();
     delay(500);
   } 
   // Select LED if button debounced
   if (butndown(digitalRead(button2), &bcount2, &bstate2, 10UL )) {
-    digitalWrite (led1Pin, LOW);
-    digitalWrite (led2Pin, HIGH);
-    digitalWrite (led3Pin, LOW);
+    leds[0] = CRGB(0,255,0);
+    leds[1] = CRGB(0,250,0);
+    leds[2] = CRGB(255,255,0);
+    leds[3] = CRGB(255,110,0);
+    leds[4] = CRGB(255,110,0);
+    leds[5] = CRGB(255,0,0);
+    Serial.println("Button 1 ");
+   FastLED.show();
     delay(500);
   } 
   // Select LED if button debounced
   if (butndown(digitalRead(button3), &bcount3, &bstate3, 10UL )) {
-    digitalWrite (led1Pin, LOW);
-    digitalWrite (led2Pin, LOW);
-    digitalWrite (led3Pin, HIGH);
+    leds[0] = CRGB(0,255,0);
+    leds[1] = CRGB(0,250,0);
+    leds[2] = CRGB(255,255,0);
+    leds[3] = CRGB(255,110,0);
+    leds[4] = CRGB(255,110,0);
+    leds[5] = CRGB(255,0,0);
+    Serial.println("Button 2 ");
+   FastLED.show();
     delay(500);
   }
 }
