@@ -132,6 +132,10 @@ void loop()
      ButtonVal=2;
   }
 
+  if (butndown(digitalRead(button3), &bcount3, &bstate3, 10UL )) {
+     ButtonVal=3;
+  }
+
    if ((ButtonVal == 1) && (currentMillis - previousMillis >= OnTime))
         {
           leds[0] = CRGB(255,255,255);
@@ -150,6 +154,7 @@ void loop()
           previousMillis = currentMillis;  // Remember the time
           
         } else if (ButtonVal == 3){
+          BRIGHTNESS=255;
           // Call the current pattern function once, updating the 'leds' array
             gPatterns[gCurrentPatternNumber]();
           
@@ -161,7 +166,7 @@ void loop()
             // do some periodic updates
             EVERY_N_MILLISECONDS( 20 ) { gHue++; } // slowly cycle the "base color" through the rainbow
             EVERY_N_SECONDS( 10 ) { nextPattern(); } // change patterns periodically
-          BRIGHTNESS=255;
+          
         } else if (ButtonVal == 2){
             Fire2012(); // run simulation frame
             FastLED.show(); // display this frame
